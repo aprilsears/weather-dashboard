@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './styles/global.css';
 import './styles/App.module.css';
@@ -11,22 +11,71 @@ const App = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [forecastData, setForecastData] = useState(null);
   const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const fetchWeather = async (location) => {
-    try {
-      const response = await axios.get(`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${location}`);
-      setWeatherData(response.data);
-    } catch (error) {
-      console.error('Error fetching weather data:', error);
+  const formatLocationQuery = (location) => {
+    if (location.includes(' ')) {
+      return `${location.replace(' ', ',')},US`;
     }
+    return location;
   };
 
-  const fetchForecast = async (location) => {
+  const fetchForecast = useCallback(async (location) => {
     try {
-      const response = await axios.get(`https://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=${location}&days=5`);
+      const formattedLocation = formatLocationQuery(location);
+      const response = await axios.get(
+        `${process.env.REACT_APP_WEATHER_BASE_URL}/forecast?q=${formattedLocation}&appid=${process.env.REACT_APP_WEATHER_API_KEY}&units=metric`
+      );
       setForecastData(response.data);
     } catch (error) {
-      console.error('Error fetching forecast data:', error);
+      setError('Error fetching forecast data');
+    }
+  }, []);
+
+  const fetchWeatherByCoords = useCallback(async (lat, lon) => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_WEATHER_BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${process.env.REACT_APP_WEATHER_API_KEY}&units=metric`
+      );
+      setWeatherData(response.data);
+      setLocation(response.data.name);
+      await fetchForecast(response.data.name);
+      setLoading(false);
+    } catch (error) {
+      setError('Error fetching weather data');
+      setLoading(false);
+    }
+  }, [fetchForecast]);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchWeatherByCoords(latitude, longitude);
+        },
+        (error) => {
+          setError('Unable to get location. Please search for a city.');
+          setLoading(false);
+        }
+      );
+    }
+  }, [fetchWeatherByCoords]);
+
+  const fetchWeather = async (searchLocation) => {
+    try {
+      setLoading(true);
+      const formattedLocation = formatLocationQuery(searchLocation);
+      const response = await axios.get(
+        `${process.env.REACT_APP_WEATHER_BASE_URL}/weather?q=${formattedLocation}&appid=${process.env.REACT_APP_WEATHER_API_KEY}&units=metric`
+      );
+      setWeatherData(response.data);
+      setLocation(searchLocation);
+      setLoading(false);
+    } catch (error) {
+      setError('City not found. Please try again with a valid city name.');
+      setLoading(false);
     }
   };
 
@@ -40,8 +89,17 @@ const App = () => {
     <div className="App">
       <Header />
       <SearchBar onSearch={handleSearch} />
-      {weatherData && <CurrentWeather data={weatherData} />}
-      {forecastData && <Forecast data={forecastData} />}
+      {loading ? (
+        <p>Loading weather data...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <>
+          {location && <h2>Weather for {location}</h2>}
+          {weatherData && <CurrentWeather data={weatherData} />}
+          {forecastData && <Forecast data={forecastData} />}
+        </>
+      )}
     </div>
   );
 };
