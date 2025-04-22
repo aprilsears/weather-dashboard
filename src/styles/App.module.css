@@ -1,7 +1,10 @@
 .container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
   
   .header {
@@ -9,4 +12,5 @@
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #ddd;
+    grid-column: 1 / -1;
   }

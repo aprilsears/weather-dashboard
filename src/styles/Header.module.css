@@ -1,16 +1,17 @@
 .header {
+  display: grid;
+  gap: 10px;
   text-align: center;
   padding: 2rem 0;
   margin-bottom: 2rem;
 }
 
 .title {
-  font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 0.5rem;
+  font-size: 3rem;
+  color: #041b1d;
 }
 
 .subtitle {
-  font-size: 1.1rem;
-  color: #666;
+  font-size: 1.5rem;
+  color: #041b1d;
 }

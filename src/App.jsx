@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './styles/global.css';
-import './styles/App.module.css';
+import styles from './styles/App.module.css';
 import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import CurrentWeather from './components/CurrentWeather';
@@ -86,7 +86,7 @@ const App = () => {
   };
 
   return (
-    <div className="App">
+    <div className={styles.container}>
       <Header />
       <SearchBar onSearch={handleSearch} />
       {loading ? (
