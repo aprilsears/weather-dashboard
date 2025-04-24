@@ -6,6 +6,7 @@ import Header from './components/Header';
 import SearchBar from './components/SearchBar';
 import CurrentWeather from './components/CurrentWeather';
 import Forecast from './components/Forecast';
+import RadarMap from './components/RadarMap';
 
 const App = () => {
   const [weatherData, setWeatherData] = useState(null);
@@ -96,8 +97,13 @@ const App = () => {
       ) : (
         <>
           {location && <h2>Weather for {location}</h2>}
-          {weatherData && <CurrentWeather data={weatherData} />}
-          {forecastData && <Forecast data={forecastData} />}
+          {weatherData && (
+            <>
+              <CurrentWeather data={weatherData} />
+              <RadarMap lat={weatherData.coord.lat} lon={weatherData.coord.lon} />
+              <Forecast data={forecastData} />
+            </>
+          )}
         </>
       )}
     </div>
